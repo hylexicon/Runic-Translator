@@ -1,6 +1,7 @@
 import sys
 import re
 import json
+import os
 
 n = len(sys.argv)
 
@@ -124,6 +125,10 @@ words = text.split()
 for j in range(len(words)):
     word = " " + str.lower(words[j]) + " "
     file = open('words.json', 'r+')
+
+    if os.stat('words.json').st_size == 0:
+        file.write('{}')
+
     data = json.load(file)
     translated = data[word] if word in data else ""
 
