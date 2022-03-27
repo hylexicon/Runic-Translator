@@ -55,6 +55,8 @@ transliterations = {
     " ps": "ᛋ",
     "ai": "ᛠ",
     "aw": "ᚪ",
+    "oi": "ᚩᚷ",
+    "oy": "ᚩᚷ",
     "h": ["audible h", "silent h"],
     "ph": ["ph as in pharmacy", "ph as in haphazard"],
     "ea": ["ea as in fear", "ea as in head", "ea as in pear", "ea as in create", "ea as in great"],
@@ -124,12 +126,15 @@ words = text.split()
 
 for j in range(len(words)):
     word = " " + str.lower(words[j]) + " "
-    file = open('words.json', 'r+')
+    file = open('words.json', 'a+')
 
     if os.stat('words.json').st_size == 0:
         file.write('{}')
+        file.close()
 
+    file = open('words.json', 'r+')
     data = json.load(file)
+
     translated = data[word] if word in data else ""
 
     if not translated:
@@ -177,6 +182,8 @@ for j in range(len(words)):
             translated = translated[:len(translated) - 1]
 
         data[word] = translated
+        file = open('words.json', 'w+')
+
         file.seek(0)
         json.dump(data, file)
 
