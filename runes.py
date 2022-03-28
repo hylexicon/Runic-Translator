@@ -68,12 +68,13 @@ map = {
     "ʤ": "ᛡ",
     "a": "ᚢ",
     "ɛ": "ᛖ",
+    "c": "ᚳ"
 }
 
 text = input("Enter a string: ")
 last = text[-1:]
 words = text.split()
-ipas = ipa.ipa_list(text, False, False)
+ipas = ipa.ipa_list(text, True, False)
 ipa_formatted = ""
 
 for i in range(len(words)):
@@ -98,9 +99,10 @@ for key in map:
     ipa_formatted = ipa_formatted.replace(key, map[key])
 
 ipa_formatted = ipa_formatted.replace('*', '')
-result = re.sub(r'(.)\1+', r'\1', ipa_formatted)
 
-if not isalnum(last) and result[-1:] != last:
-    result = result[:-1] + last
+if not isalnum(last) and ipa_formatted[-1:] != last:
+    ipa_formatted = ipa_formatted[:-1] + last
+
+result = re.sub(r'(.)\1+', r'\1', ipa_formatted)
 
 print("\n" + result)
