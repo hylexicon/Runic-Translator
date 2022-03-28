@@ -1,194 +1,101 @@
-import sys
 import re
-import json
-import os
+import eng_to_ipa as ipa
 
-n = len(sys.argv)
-
-transliterations = {
-    " eye": "ᛁ",
-    "eye ": "ᛁ",
-    "one": "ᚹᚪᚾ",
-    "once": "ᚹᚪᚾᛋ",
-    "tion": "ᛋᚳᚪᚾ",
-    "two": "ᛏᚢ",
-    "sh": "ᛋᚳ",
-    "ch": "ᛋᚳ",
+map = {
+    "xæɑ": "ᛇᛠ",
+    "oi": "ᚩᛁ",
+    "ddʒ": "ᚷᚷ",
+    "xø": "ᛇᛟ",
+    "xæ": "ᛇᚫ",
+    "xy": "ᛇᚣ",
+    "xi": "ᛇᛁ",
+    "øx": "ᛟᛇ",
+    "æx": "ᚫᛇ",
+    "yx": "ᚣᛇ",
+    "ix": "ᛁᛇ",
+    "ks": "ᛉ",
+    "kʲ": "ᚳ",
+    "tʃ": "ᚳ",
+    "æɑ": "ᛠ",
+    "ŋg": "ᛝ",
+    "ij": "ᛁᚷ",
+    "sk": "ᛋᚳ",
+    "eo": "ᛖᚩ",
+    "ej": "ᛖᚷ",
+    "eʝ": "ᛖᛇ",
+    "ɑu": "ᚪᚢ",
+    "ɑi": "ᚪᛁ",
+    "aj": "ᚪᛡ",
+    "ax": "ᚪᛡ",
+    "æu": "ᚫᚢ",
     "f": "ᚠ",
-    "th": "ᚦ",
+    "v": "ᚠ",
+    "u": "ᚢ",
+    "θ": "ᚦ",
+    "ð": "ᚦ",
+    "o": "ᚩ",
     "r": "ᚱ",
     "k": "ᚳ",
-    "ke ": "ᚳ",
-    "ck ": "ᚳ",
-    "q": "ᚳ",
-    "qu": "ᚳᚹ",
+    "g": "ᚷ",
+    "ɣ": "ᚷ",
     "w": "ᚹ",
-    "wh": "ᚹ",
-    "we ": "ᚹ",
-    "ew": "ᚢ",
-    "v": "ᚢ",
-    "ve ": "ᚢ",
-    "kn": "ᚾ",
-    "igh": "ᚪᛁ",
-    "ie ": "ᚪᛁ",
+    "h": "ᚻ",
+    "x": "ᚻ",
     "n": "ᚾ",
-    "wn ": "ᚾ",
+    "i": "ᛁ",
+    "j": "ᛄ",
     "p": "ᛈ",
-    "x": "ᛉ",
     "s": "ᛋ",
-    "ce ": "ᛋ",
-    "se ": "ᛋ",
     "z": "ᛋ",
     "t": "ᛏ",
     "b": "ᛒ",
+    "e": "ᛖ",
     "m": "ᛗ",
-    "le ": "ᚩᛚ",
     "l": "ᛚ",
-    "ng": "ᛝ",
+    "ŋ": "ᛝ",
+    "ø": "ᛟ",
     "d": "ᛞ",
-    "ay": "ᛠ",
-    "ey ": "ᛖᛁ",
-    "ei": "ᛠ",
-    "ee": "ᛇ",
-    "ge ": "ᛄ",
-    "you": "ᚣᚢ",
-    " ps": "ᛋ",
-    "ai": "ᛠ",
-    "aw": "ᚪ",
-    "oi": "ᚩᚷ",
-    "oy": "ᚩᚷ",
-    "h": ["audible h", "silent h"],
-    "ph": ["ph as in pharmacy", "ph as in haphazard"],
-    "ea": ["ea as in fear", "ea as in head", "ea as in pear", "ea as in create", "ea as in great"],
-    "io": ["io as in biography", "io as in axiom", "io as in radio"],
-    "sc": ["sc as in science", "sc as in scatter"],
-    "ou": ["ou as in out", "ou as in you", "ou as in found", "ou as in four"],
-    "c": ["c as in cent", "c as in call"],
-    "a": ["a as in cat", "a as in father", "a as in pay"],
-    "e": ["e as in ten", "e as in lean", "silent e"],
-    "g": ["g as in garage", "g as in generate", "silent g"],
-    "i": ["i as in ice", "i as in hip", "i as in ski", "silent i"],
-    "j": ["j as in join", "j as in Jorge"],
-    "o": ["o as in toad", "o as in look", "o as in too", "o as in odd"],
-    "u": "ᚢ",
-    "y": ["y as in your", "y as in party", "y as in my"]
+    "ɑ": "ᚪ",
+    "æ": "ᚫ",
+    "y": "ᚣ",
+    "ʍ": "ᚻᚹ",
+    "ʃ": "ᛋᚳ",
+    "ə": "ᚢ",
+    "ɪ": "ᛇ",
+    "ʊ": "ᚩ",
+    "ɔ": "ᚫ",
+    "ʤ": "ᛡ",
+    "a": "ᚢ",
+    "ɛ": "ᛖ",
 }
-
-multiple = {
-    "a as in cat": "ᚫ",
-    "a as in father": "ᚪ",
-    "a as in pay": "ᛖᛁ",
-    "c as in call": "ᚳ",
-    "c as in cent": "ᛋ",
-    "e as in ten": "ᛖ",
-    "e as in lean": "ᛖᛁ",
-    "silent e": "",
-    "g as in garage": "ᚷ",
-    "g as in generate": "ᛄ",
-    "silent g": "",
-    "i as in ice": "ᚪᛁ",
-    "i as in hip": "ᛁ",
-    "i as in ski": "ᛇ",
-    "silent i": "",
-    "j as in join": "ᛄ",
-    "j as in Jorge": "ᚻ",
-    "o as in toad": "ᚩ",
-    "o as in look": "ᛟ",
-    "o as in too": "ᚢ",
-    "o as in odd": "ᚪ",
-    "y as in your": "ᚣ",
-    "y as in party": "ᛁ",
-    "y as in my": "ᚪᛁ",
-    "ou as in out": "ᚫᚢ",
-    "ou as in you": "ᚢ",
-    "ou as in four": "ᚪᚢ",
-    "ou as in found": "ᛠ",
-    "sc as in science": "ᛋ",
-    "sc as in scatter": "ᛋᚳ",
-    "io as in biography": "ᚪᛁᚩ",
-    "io as in axiom": "ᛁᚪ",
-    "io as in radio": "ᛡ",
-    "ea as in fear": "ᛇ",
-    "ea as in head": "ᛖ",
-    "ea as in pear": "ᛖᛁ",
-    "ea as in create": "ᛖᛁᛖᛁ",
-    "ea as in great": "ᛖᛁ",
-    "ph as in pharmacy": "ᚠ",
-    "ph as in haphazard": "ᛈᚻ",
-    "audible h": "ᚻ",
-    "silent h": "",
-}
-
-result = ""
 
 text = input("Enter a string: ")
 words = text.split()
+ipas = ipa.ipa_list(text, False, False)
+ipa_formatted = ""
 
-for j in range(len(words)):
-    word = " " + str.lower(words[j]) + " "
-    file = open('words.json', 'a+')
+for i in range(len(words)):
+    word = words[i]
+    transliterations = ipas[i]
+    transliteration = ""
 
-    if os.stat('words.json').st_size == 0:
-        file.write('{}')
-        file.close()
+    if len(ipas[i]) > 1:
+        print("\n" + (words[i - 1] if i != 0 else "") + " \033[4m" + word + "\033[0m " + (words[i + 1] if i + 1 <= len(words) else ""))
 
-    file = open('words.json', 'r+')
-    data = json.load(file)
+        for j in range(len(transliterations)):
+            print(str(j + 1) + ": " + transliterations[j])
 
-    translated = data[word] if word in data else ""
+        choice = int(input("Which pronunciation?: "))
+        transliteration = transliterations[choice - 1]
+    else:
+        transliteration = transliterations[0]
 
-    if not translated:
-        i = 0
+    ipa_formatted += transliteration + " "
 
-        while i < len(word):
-            transliteration = ""
-            startIdx = i
+for key in map:
+    ipa_formatted = ipa_formatted.replace(key, map[key])
 
-            if i <= len(word) - 4 and word[i] + word[i + 1] + word[i + 2] + word[i + 3] in transliterations:
-                transliteration = transliterations[word[i] + word[i + 1] + word[i + 2] + word[i + 3]]
-                i += 4
-
-            elif i <= len(word) - 3 and word[i] + word[i + 1] + word[i + 2] in transliterations:
-                transliteration = transliterations[word[i] + word[i + 1] + word[i + 2]]
-                i += 3
-
-            elif i <= len(word) - 2 and word[i] + word[i + 1] in transliterations:
-                transliteration = transliterations[word[i] + word[i + 1]]
-                i += 2
-
-            elif word[i] in transliterations:
-                transliteration = transliterations[word[i]]
-                i += 1
-
-            else:
-                transliteration = word[i]
-                i += 1
-
-            if type(transliteration) is list:
-                print("\n" + word[1:startIdx + 1] + "\u0332" + word[startIdx + 1:])
-
-                for k in range(len(transliteration)):
-                    print(str(k + 1) + ": " + transliteration[k])
-
-                choice = int(input("Which pronunciation?: "))
-                transliteration = multiple[transliteration[choice - 1]]
-
-            translated += transliteration
-
-        if translated[0] == " ":
-            translated = translated[1:]
-
-        if translated[len(translated) - 1] == " ":
-            translated = translated[:len(translated) - 1]
-
-        data[word] = translated
-        file = open('words.json', 'w+')
-
-        file.seek(0)
-        json.dump(data, file)
-
-    result += translated + " "
-
-result = re.sub(r'(.)\1+', r'\1', result)
+ipa_formatted = ipa_formatted.replace('*', '')
+result = re.sub(r'(.)\1+', r'\1', ipa_formatted)
 
 print("\n" + result)
