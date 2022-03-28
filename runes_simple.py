@@ -73,26 +73,7 @@ map = {
 text = input("Enter a string: ")
 last = text[-1:]
 words = text.split()
-ipas = ipa.ipa_list(text, False, False)
-ipa_formatted = ""
-
-for i in range(len(words)):
-    word = words[i]
-    transliterations = ipas[i]
-    transliteration = ""
-
-    if len(ipas[i]) > 1:
-        print("\n" + (words[i - 1] if i != 0 else "") + " \033[4m" + word + "\033[0m " + (words[i + 1] if i + 1 < len(words) else ""))
-
-        for j in range(len(transliterations)):
-            print(str(j + 1) + ": " + transliterations[j])
-
-        choice = int(input("Which pronunciation?: "))
-        transliteration = transliterations[choice - 1]
-    else:
-        transliteration = transliterations[0]
-
-    ipa_formatted += transliteration + " "
+ipa_formatted = ipa.convert(text, False, False, False)
 
 for key in map:
     ipa_formatted = ipa_formatted.replace(key, map[key])
