@@ -73,7 +73,6 @@ map = {
 
 text = input("Enter a string: ")
 last = text[-1:]
-words = text.split()
 ipa_formatted = ipa.convert(text, False, True, False)
 
 for key in map:
