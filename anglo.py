@@ -1,6 +1,7 @@
 from curses.ascii import isalnum
 import re
-import eng_to_ipa as ipa
+import argparse
+import epitran
 
 map = {
     "xæɑ": "ᛇᛠ",
@@ -32,12 +33,17 @@ map = {
     "f": "ᚠ",
     "v": "ᚠ",
     "u": "ᚢ",
+    "ʌ": "ᚢ",
     "θ": "ᚦ",
     "ð": "ᚦ",
     "o": "ᚩ",
     "r": "ᚱ",
+    "ɹ": "ᚱ",
+    "ɹ̩": "ᚱ",
+    "ᚱ̩": "ᚱ",
     "k": "ᚳ",
     "g": "ᚷ",
+    "ɡ": "ᚷ",
     "ɣ": "ᚷ",
     "w": "ᚹ",
     "h": "ᚻ",
@@ -70,32 +76,22 @@ map = {
     "ɛ": "ᛖ",
     "c": "ᚳ",
     "ʧ": "ᛋᚳ",
-    "q": "ᚳᚹ"
+    "q": "ᚳᚹ",
 }
 
-text = input("Enter a string: ")
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input")
+parser.add_argument("-o", "--output")
+
+args = parser.parse_args()
+
+inputFile = open(args.input, "r")
+text = inputFile.read()
+inputFile.close()
+
+epi = epitran.Epitran("eng-Latn")
 last = text[-1:]
-words = text.split()
-ipas = ipa.ipa_list(text, True, False)
-ipa_formatted = ""
-
-for i in range(len(words)):
-    word = words[i]
-    transliterations = ipas[i]
-    transliteration = ""
-
-    if len(ipas[i]) > 1:
-        print("\n" + (words[i - 1] if i != 0 else "") + " \033[4m" + word + "\033[0m " + (words[i + 1] if i + 1 < len(words) else ""))
-
-        for j in range(len(transliterations)):
-            print(str(j + 1) + ": " + transliterations[j])
-
-        choice = int(input("Which pronunciation?: "))
-        transliteration = transliterations[choice - 1]
-    else:
-        transliteration = transliterations[0]
-
-    ipa_formatted += transliteration + " "
+ipa_formatted = epi.transliterate(text, True, True)
 
 for key in map:
     ipa_formatted = ipa_formatted.replace(key, map[key])
@@ -107,4 +103,6 @@ if not isalnum(last) and ipa_formatted[-1:] != last:
 
 result = re.sub(r'(.)\1+', r'\1', ipa_formatted)
 
-print("\n" + result)
+outputFile = open(args.output, "w")
+outputFile.write(result)
+inputFile.close()
